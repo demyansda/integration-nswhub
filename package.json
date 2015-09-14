@@ -1,0 +1,15 @@
+{
+    "name": "wh-test",
+    "version": "0.0.0",
+    "private": true,
+    "files": [
+        "index.js"
+    ],
+    "dependencies": {
+        "integration-common": "https://github.com/rpmsoftware/integration-common.git",
+        "integration-web": "https://github.com/rpmsoftware/integration-web.git"
+    },
+    "scripts": {
+        "start": "node ./index.js"
+    }
+}
