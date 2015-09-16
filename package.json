@@ -2,9 +2,8 @@
     "name": "wh-test",
     "version": "0.0.0",
     "private": true,
-    "main": "index.js",
     "files": [
-        "index.js"
+        "start.js"
     ],
     "dependencies": {
         "integration-common": "https://github.com/rpmsoftware/integration-common.git",
