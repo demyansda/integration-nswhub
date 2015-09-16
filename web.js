@@ -1,5 +1,6 @@
 /* global process */
-var app = require('express').createServer();
+var express = require('express');
+var app = express();
 
 app.post('/wh', function (request, response) {
     response.send('Hello World!');
