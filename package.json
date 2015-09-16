@@ -6,8 +6,6 @@
         "index.js"
     ],
     "dependencies": {
-        "body-parser": "^1.13.3",
-        "express": "^4.13.3",
         "integration-common": "https://github.com/rpmsoftware/integration-common.git",
         "integration-web": "https://github.com/rpmsoftware/integration-web.git"
     },

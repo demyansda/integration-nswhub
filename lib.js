@@ -1,6 +1,7 @@
+/* global process */
 var express = require('express');
 var bodyParser = require('body-parser');
-var https = require('http');
+var https = require('https');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
@@ -27,7 +28,7 @@ function startJsonPostServer(port, path, options, callback) {
     var app = express();
     app.use(bodyParser.json());
     app.post(normalizePath(path), callback);
-    var srv = https.createServer(app).listen(port);
+    var srv = https.createServer(app).listen(options, port);
     console.info('WebHooks server is listening on port', port);
     return srv;
 };
