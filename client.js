@@ -5,7 +5,7 @@ var util = require('util');
 var config = rpmUtil.readConfig(undefined, 'config.json');
 var host = 'localhost:' + config.port;
 host = 'whtest.herokuapp.com';
-var cpath = util.format('https://%s/%s',host, config.path);
+var cpath = util.format('http://%s/%s',host, config.path);
 console.log(cpath);
 var RESTClient = require('node-rest-client').Client;
 
