@@ -7,7 +7,7 @@ if (process.env.PORT) {
         path: config.path
     };
 }
-
+console.log(config);
 require('integration-web/lib').startJsonPostServer(config, function (req, res) {
     console.info('Request headers', req.headers);
     console.info('Request body', req.body);
