@@ -28,7 +28,7 @@ function getApis(subscriptions) {
                 if (info instanceof Error) {
                     return;
                 }
-                var instance = rpmUtil.getOrCreate(apisTree, info.RPM, {});
+                var instance = rpmUtil.getOrCreate(apisTree, info.InstanceID, {});
                 if (instance[info.SubscriberID]) {
                     console.warn('Skipping duplicate API definition', info);
                 } else {
@@ -46,7 +46,7 @@ exports.start = function (config, listeners) {
         if (!listeners.length) {
             return;
         }
-        var api = rpmUtil.getDeepValue(apis, [webHook.RPM, webHook.SubscriberID]);
+        var api = rpmUtil.getDeepValue(apis, [webHook.InstanceID, webHook.Subscriber]);
         if (!api) {
             console.error('API is not found');
             return;
