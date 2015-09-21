@@ -10,7 +10,7 @@ var webHooks = require('integration-web/webhooks');
 
 
 
-function getApis(subscriptions) {
+function getApiTree(subscriptions) {
 
     var apis = subscriptions.map(function (subscription) {
         return new rpm.RpmApi(subscription);
@@ -32,14 +32,19 @@ function getApis(subscriptions) {
                 if (instance[info.SubscriberID]) {
                     console.warn('Skipping duplicate API definition', info);
                 } else {
-                    instance[info.SubscriberID] = apis[index];
+                    var api = apis[index];
+                    rpmUtil.getCache(api).info = info; 
+                    instance.subscribers[info.SubscriberID] = api;
+
                 }
             });
             return apisTree;
         }]);
 }
 
-exports.start = function (config, listeners) {
+exports.getApiTree = getApiTree;
+
+exports.start = function (config, listeners, apis) {
     function processWebHook(webHook) {
         console.info('Processing event', webHook);
 
@@ -67,11 +72,9 @@ exports.start = function (config, listeners) {
         ]);
     }
 
-    var apis;
-
     promised.seq([
         function () {
-            return getApis(config.subscriptions);
+            return apis || getApiTree(config.subscriptions);
         },
         function (result) {
             apis = result;
