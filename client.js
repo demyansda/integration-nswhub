@@ -4,6 +4,7 @@ var rpmUtil = require('integration-common/util');
 var util = require('util');
 var config = rpmUtil.readConfig(undefined, 'config.json').webHook;
 var host = 'localhost:' + config.port;
+// 
 host = 'whtest.herokuapp.com';
 var cpath = util.format('https://%s/%s',host, config.path);
 console.log(cpath);
