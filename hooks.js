@@ -34,6 +34,7 @@ promised.seq([
     },
     function (result) {
         apiTree = result;
+        console.log('Tree:',apiTree);
         for (var instanceID in apiTree) {
             var instance = apiTree[instanceID];
             for (var subscriberID in instance) {
@@ -49,6 +50,7 @@ promised.seq([
         return null;
     },
     function (processes) {
+        console.log('Processes:',processes);
         var theProcess;
         if (processes) {
             var name = contactsProcess.name;
