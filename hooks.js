@@ -51,7 +51,7 @@ promised.seq([
     function (processes) {
         var theProcess;
         if (processes) {
-            var name = proc.name;
+            var name = contactsProcess.name;
             for (var key in processes) {
                 var proc = processes[key];
                 if (proc.Process == name) {
@@ -61,10 +61,10 @@ promised.seq([
             }
         }
         if (theProcess) {
-            proc = theProcess;
+            contactsProcess = theProcess;
             hub.start(config, hooks, apiTree);
         } else {
-            rpmUtil.getRejectedPromise(new Error('Cannot find process:' + JSON.stringify(proc)));
+            rpmUtil.getRejectedPromise(new Error('Cannot find process:' + JSON.stringify(contactsProcess)));
         }
     }
 ]);
