@@ -34,7 +34,7 @@ function getApiTree(subscriptions) {
                 } else {
                     var api = apis[index];
                     rpmUtil.getCache(api).info = info; 
-                    instance.subscribers[info.SubscriberID] = api;
+                    instance[info.SubscriberID] = api;
 
                 }
             });
