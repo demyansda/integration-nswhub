@@ -3,15 +3,15 @@
     "version": "0.0.0",
     "private": true,
     "files": [
-        "start.js"
+        "hooks.js","wh-hub.js"
     ],
     "dependencies": {
-        "express": "^4.12.4",
+        "promised-io": "^0.3.5",
         "integration-common": "https://github.com/rpmsoftware/integration-common.git",
         "integration-web": "https://github.com/rpmsoftware/integration-web.git"
     },
     
     "scripts": {
-        "start": "node ./start.js"
+        "start": "node ./hooks.js"
     }
 }
