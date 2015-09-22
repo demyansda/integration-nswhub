@@ -18,9 +18,15 @@ function updateCompanyHistory(event, process, formID) {
         },
         function (form) {
             console.log('Form:', JSON.stringify(form));
-
+            var companyField = form.getFieldByUid(contactsProcess.companyField, true);
+            var historyField = form.getFieldByUid(contactsProcess.historyField, true);
+            console.log(companyField,historyField);
         }
-    ]);
+    ]).then(
+        function () { },
+        function (error) {
+            console.error(error);
+        });
 }
 
 var hooks = [updateCompanyHistory];
@@ -34,7 +40,7 @@ promised.seq([
     },
     function (result) {
         apiTree = result;
-        console.log('Tree:',apiTree);
+        console.log('Tree:', apiTree);
         for (var instanceID in apiTree) {
             var instance = apiTree[instanceID];
             for (var subscriberID in instance) {
@@ -61,14 +67,27 @@ promised.seq([
                 }
             }
         }
-        if (theProcess) {
-            contactsProcess = theProcess;
-            hub.start(config, hooks, apiTree);
-        } else {
-            rpmUtil.getRejectedPromise(new Error('Cannot find process:' + JSON.stringify(contactsProcess)));
+        if (!theProcess) {
+            return rpmUtil.getRejectedPromise(new Error('Cannot find process:' + JSON.stringify(contactsProcess)));
         }
+        ['companyField', 'historyField'].forEach(function (property) {
+            theProcess[property] = contactsProcess[property];
+        });
+        contactsProcess = theProcess;
+        return contactsProcess.getFields(true);
+    },
+    function (fields) {
+        fields = fields.Fields;
+        ['companyField', 'historyField'].forEach(function (property) {
+            contactsProcess[property] = fields[contactsProcess[property]].Uid;
+        });
+        console.log(contactsProcess);
     }
-]);
+]).then(
+        function () { },
+        function (error) {
+            console.error(error);
+        });;
 var apiTree;
 
 
