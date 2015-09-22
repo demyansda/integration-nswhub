@@ -81,7 +81,7 @@ promised.seq([
         ['companyField', 'historyField'].forEach(function (property) {
             contactsProcess[property] = fields[contactsProcess[property]].Uid;
         });
-        console.log(contactsProcess);
+        console.log('Process:',contactsProcess);
     }
 ]).then(
         function () { },
