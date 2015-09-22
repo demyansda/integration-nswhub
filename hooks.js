@@ -20,7 +20,7 @@ function updateCompanyHistory(event, process, formID) {
             console.log('Form:', JSON.stringify(form));
             var companyField = form.getFieldByUid(contactsProcess.companyField, true);
             var historyField = form.getFieldByUid(contactsProcess.historyField, true);
-            console.log(companyField,historyField);
+            console.log(companyField, historyField);
         }
     ]).then(
         function () { },
@@ -81,13 +81,14 @@ promised.seq([
         ['companyField', 'historyField'].forEach(function (property) {
             contactsProcess[property] = fields[contactsProcess[property]].Uid;
         });
-        console.log('Process:',contactsProcess);
+        console.log('Process:', contactsProcess);
+        hub.start(config, hooks, apiTree);
     }
 ]).then(
-        function () { },
-        function (error) {
-            console.error(error);
-        });;
+    function () { },
+    function (error) {
+        console.error(error);
+    });;
 var apiTree;
 
 
