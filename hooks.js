@@ -14,7 +14,7 @@ function updateCompanyHistory(event, process, formID) {
     }
     promised.seq([
         function () {
-            return contactProsses._api.getForm(formID);
+            return contactsProcess._api.getForm(formID);
         },
         function (form) {
             console.log('Form:', JSON.stringify(form));
