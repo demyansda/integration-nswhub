@@ -16,10 +16,10 @@ function updateCompanyHistory(event, process, formID) {
         function () {
             return contactsProcess._api.getForm(formID);
         },
-        function (form) {
-            console.log('Form:', JSON.stringify(form));
-            var companyField = form.getFieldByUid(contactsProcess.companyField, true);
-            var historyField = form.getFieldByUid(contactsProcess.historyField, true);
+        function (response) {
+            console.log('Form:', JSON.stringify(response));
+            var companyField = response.Form.getFieldByUid(contactsProcess.companyField, true);
+            var historyField = response.Form.getFieldByUid(contactsProcess.historyField, true);
             console.log(companyField, historyField);
         }
     ]).then(
