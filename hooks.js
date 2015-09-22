@@ -50,7 +50,6 @@ promised.seq([
         return null;
     },
     function (processes) {
-        console.log('Processes:',processes);
         var theProcess;
         if (processes) {
             var name = contactsProcess.name;
@@ -71,7 +70,6 @@ promised.seq([
     }
 ]);
 var apiTree;
-
 
 
 var x = {
