@@ -23,12 +23,12 @@ function getApiTree(subscriptions) {
             }));
         },
         function (infos) {
-            var apisTree = {};
+            var apiTree = {};
             infos.forEach(function (info, index) {
                 if (info instanceof Error) {
                     return;
                 }
-                var instance = rpmUtil.getOrCreate(apisTree, info.InstanceID, {});
+                var instance = rpmUtil.getOrCreate(apiTree, info.InstanceID, {});
                 if (instance[info.SubscriberID]) {
                     console.warn('Skipping duplicate API definition', info);
                 } else {
@@ -38,7 +38,8 @@ function getApiTree(subscriptions) {
 
                 }
             });
-            return apisTree;
+            console.log('API Tree:', apiTree);
+            return apiTree;
         }]);
 }
 

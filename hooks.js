@@ -6,122 +6,197 @@ var util = require('util');
 var hub = require('./wh-hub');
 
 
-
-function updateCompanyHistory(event, process, formID) {
-    if (event !== webhooks.EVENT_FORM_EDIT || process !== contactsProcess) {
-        console.log('Not for me');
-        return;
+function getHistoryTableValue(row, historySubFieldUid) {
+    var result = row.Fields.find(function (field) {
+        return field.Uid === historySubFieldUid;
+    });
+    if (result) {
+        return result.Values[0];
     }
+    throw new Error('Field not found Uid=' + historySubFieldUid);
+}
+
+function updateForm(formID) {
+    var process = this;
     promised.seq([
         function () {
-            return contactsProcess._api.getForm(formID);
+            return process._api.getForm(formID);
         },
         function (response) {
-            console.log('Form:', JSON.stringify(response));
-            var companyField = response.Form.getFieldByUid(contactsProcess.companyField, true);
-            var historyField = response.Form.getFieldByUid(contactsProcess.historyField, true);
-            console.log(companyField, historyField);
+            var mainField = response.Form.getField(process.mainField, true);
+
+            var theID = mainField.ID;
+            var theValue = mainField.Value;
+
+            if (!theID && !theValue) {
+                console.log('There is nothing to put to the History');
+                return;
+            }
+
+            var historyField = response.Form.getField(process.historyField, true);
+
+            var defRow = historyField.Rows.find(function (row) {
+                return row.IsDefinition;
+            });
+            if (!defRow) {
+                throw new Error('Definition row is not found for the field ' + process.historyField)
+            }
+
+
+            if (historyField.Rows.find(function (row) {
+                if (row.isDefinition) {
+                    return;
+                }
+                var value = getHistoryTableValue(row, process.historySubField);
+                return value && (theID && value.ID == theID || !theID && value.Value == theValue);
+            })) {
+                console.log('Value found in history');
+                return;
+            }
+
+            historyField.Rows.push({
+                Fields: defRow.Fields.map(function (field) {
+                    return {
+                        Uid: field.Uid,
+                        Values: field.Uid === process.historySubField ? [
+                            {
+                                "ID": theID,
+                                "Value": theValue
+                            }
+                        ] : [],
+                    };
+                })
+            });
+
+            return process._api.editForm(formID, [historyField]);
         }
     ]).then(
         function () { },
         function (error) {
             console.error(error);
         });
+
 }
 
-var hooks = [updateCompanyHistory];
 
+function initApiTree() {
+    return promised.seq([
+        function () {
+            return hub.getApiTree(config.subscriptions)
+        },
+        function (result) {
+            apiTree = result;
+            return result;
+        }]);
+}
+
+function initHistoryUpdater() {
+    var process;
+    var historyUpdaterConfig = config.historyUpdater;
+    return promised.seq([
+        function () {
+            for (var instanceID in apiTree) {
+                var instance = apiTree[instanceID];
+                for (var subscriberID in instance) {
+                    var api = instance[subscriberID];
+                    var info = rpmUtil.getCache(api).info;
+                    if (info.Subscriber == historyUpdaterConfig.subscriber && info.Instance == historyUpdaterConfig.instance) {
+                        historyUpdaterConfig.subscriber = info.SubscriberID;
+                        historyUpdaterConfig.instance = info.InstanceID;
+                        return api.getCachedProcesses();
+                    }
+                }
+            }
+        },
+        function (processes) {
+            if (processes) {
+                var name = historyUpdaterConfig.process;
+                for (var key in processes) {
+                    var proc = processes[key];
+                    if (proc.Process == name) {
+                        process = proc;
+                        break;
+                    }
+                }
+            }
+            if (!process) {
+                return rpmUtil.getRejectedPromise(new Error('Cannot find process: ' + historyUpdaterConfig.process));
+            }
+            ['mainField', 'historyField', 'historySubField'].forEach(function (property) {
+                process[property] = historyUpdaterConfig[property];
+            });
+            return process.getFields();
+        },
+        function (fields) {
+            fields = fields.Fields;
+
+            function getField(fields, fieldName) {
+                var result = fields.find(function (field) {
+                    return field.Name === fieldName;
+                });
+                if (!result) {
+                    throw new Error('Field not found: ', fieldName);
+                }
+                return result;
+            }
+
+            try {
+
+                var mainField = getField(fields, historyUpdaterConfig.mainField);
+                var historyField = getField(fields, historyUpdaterConfig.historyField);
+
+                if (historyField.FieldType != rpm.OBJECT_TYPE.CustomField || historyField.SubType != rpm.DATA_TYPE.FieldTable) {
+                    throw new Error('Invalid History field type. FieldTable type is expected for the field ', historyField);
+                }
+
+                var row = historyField.Rows.find(function (row) {
+                    return row.IsDefinition;
+                });
+                if (!row) {
+                    throw new Error('Definition row is not found for the field ', historyField);
+                }
+                var historySubField = getField(row.Fields, historyUpdaterConfig.historySubField);
+
+                ['FieldType', 'SubType'].forEach(function (property) {
+                    if (historySubField[property] != mainField[property]) {
+                        throw new Error('Field types dont match', mainField, historySubField);
+                    }
+                });
+
+                historyUpdaterConfig.historySubField = historySubField.Uid;
+            } catch (error) {
+                return rpmUtil.getRejectedPromise(error);
+            }
+
+            process.updateForm = updateForm;
+            console.log('Process:', process);
+            
+
+            hooks.push(function (event, process, formID) {
+                (event === webhooks.EVENT_FORM_EDIT && process === process) ? process.updateForm(formID) : console.log('Not for me');
+            });
+            // process.updateForm(67509);
+
+
+
+        }]);
+
+}
+
+
+var hooks = [];
 var config = rpmUtil.readConfig('RPM_CONFIG', 'config.json');
-var contactsProcess = config.contactsProcess;
-
-promised.seq([
-    function () {
-        return hub.getApiTree(config.subscriptions)
-    },
-    function (result) {
-        apiTree = result;
-        console.log('Tree:', apiTree);
-        for (var instanceID in apiTree) {
-            var instance = apiTree[instanceID];
-            for (var subscriberID in instance) {
-                var api = instance[subscriberID];
-                var info = rpmUtil.getCache(api).info;
-                if (info.Subscriber == contactsProcess.subscriber && info.Instance == contactsProcess.instance) {
-                    contactsProcess.subscriber = info.SubscriberID;
-                    contactsProcess.instance = info.InstanceID;
-                    return api.getCachedProcesses();
-                }
-            }
-        }
-        return null;
-    },
-    function (processes) {
-        var theProcess;
-        if (processes) {
-            var name = contactsProcess.name;
-            for (var key in processes) {
-                var proc = processes[key];
-                if (proc.Process == name) {
-                    theProcess = proc;
-                    break;
-                }
-            }
-        }
-        if (!theProcess) {
-            return rpmUtil.getRejectedPromise(new Error('Cannot find process:' + JSON.stringify(contactsProcess)));
-        }
-        ['companyField', 'historyField'].forEach(function (property) {
-            theProcess[property] = contactsProcess[property];
-        });
-        contactsProcess = theProcess;
-        return contactsProcess.getFields(true);
-    },
-    function (fields) {
-        fields = fields.Fields;
-        ['companyField', 'historyField'].forEach(function (property) {
-            contactsProcess[property] = fields[contactsProcess[property]].Uid;
-        });
-        console.log('Process:', contactsProcess);
-        hub.start(config, hooks, apiTree);
-    }
-]).then(
-    function () { },
-    function (error) {
-        console.error(error);
-    });;
 var apiTree;
 
-
-var x = {
-    ObjectID: 67339,
-    ObjectType: 520,
-    ParentID: 842,
-    ParentType: 510,
-    EventName: 'form.edit',
-    RequestID: 458,
-    StatusID: 2044,
-    InstanceID: '2001',
-    Instance: 'Cube11',
-    Subscriber: '1071'
-};
-
-
-var info = {
-    SubscriberContact: '',
-    InstanceID: '2001',
-    Subscriber: 'Primary Development',
-    SubscriberID: 1071,
-    User: 'Dmitriy Serdyukov',
-    UserID: 297095,
-    Role: 'System Manager',
-    Instance: 'Cube11'
-};
-
-var contactProsses = {
-    Instance: 'Cube11',
-    InstanceID: '2001',
-    Name: 'ContactsSDA',
-    Subscriber: 'Primary Development',
-    SubscriberID: 1071,
-};
-
+promised.seq([
+    initApiTree,
+    initHistoryUpdater,
+]).then(
+    function () {
+        if (hooks.length) {
+            hub.start(config, hooks, apiTree);
+        }
+    },
+    function (error) {
+        console.error(error);
+    });
