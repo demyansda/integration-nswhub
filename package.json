@@ -1,9 +1,9 @@
 {
-    "name": "wh-test",
-    "version": "0.0.0",
+    "name": "whub",
+    "version": "0.0.1",
     "private": true,
     "files": [
-        "hooks.js","wh-hub.js"
+        "hooks.js","wh-hub.js","config.sample.json"
     ],
     "dependencies": {
         "promised-io": "^0.3.5",

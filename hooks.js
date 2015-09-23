@@ -175,9 +175,6 @@ function initHistoryUpdater() {
             hooks.push(function (event, process, formID) {
                 (event === webhooks.EVENT_FORM_EDIT && process === process) ? process.updateForm(formID) : console.log('Not for me');
             });
-            // process.updateForm(67509);
-
-
 
         }]);
 

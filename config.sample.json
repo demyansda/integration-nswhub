@@ -1,0 +1,20 @@
+{
+    "webHook": {
+        "path": "wh",
+        "signSecret": "Must match the one in RPM webhook definition"
+    },
+    "subscriptions": [
+        {
+            "url": "https://secure.cubedms.com/rpm",
+            "key": "..."
+        }
+    ],
+    "historyUpdater": {
+        "subscriber": "Subscriber name",
+        "instance": "Instance name",
+        "process": "Some process",
+        "mainField": "Company",
+        "historyField": "Company History",
+        "historySubField": "Company"
+    }
+}
