@@ -163,7 +163,7 @@ function initHistoryUpdater() {
                     }
                 });
 
-                historyUpdaterConfig.historySubField = historySubField.Uid;
+                process.historySubField = historySubField.Uid;
             } catch (error) {
                 return rpmUtil.getRejectedPromise(error);
             }
